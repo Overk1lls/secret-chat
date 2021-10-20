@@ -1,0 +1,7 @@
+.chat {
+    border: 1px solid black;
+}
+
+ol li {
+    list-style-type: none;
+}
