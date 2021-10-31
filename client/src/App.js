@@ -1,24 +1,24 @@
 import Form from './pages/form/form';
 import Chat from './pages/chat/chat';
-// import useToken from './hooks/useToken';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-  // const { token, setToken } = useToken();
+  const chatId = localStorage.getItem('chatId');
 
-  // if (!token) {
-  //   return <Form setToken={setToken} />
-  // }
+  if (!chatId) {
+    return <Form />;
+  }
 
   return (
-    <div className="container">
+    <div>
       <Router>
         <Switch>
-          <Route path='/:chatId' component={Chat} />
-          <Route exact path='/' component={Form} />
-          {/* <Redirect to={'/' + token} /> */}
+          <Route path='/:chatId'>
+            <Chat />
+          </Route>
+          <Redirect to={'/' + chatId} />
         </Switch>
       </Router>
     </div>

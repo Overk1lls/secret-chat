@@ -1,30 +1,32 @@
-import React from 'react';
-// import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import utils from '../../utils/utils';
 
 const SERVER_URL = 'http://localhost:4000/';
 
-async function Auth(credentials) {
-    return fetch(SERVER_URL + 'api/form', {
+const Auth = async credentials => {
+    return await fetch(SERVER_URL + 'api/form', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(credentials)
     })
-        .then(data => data.json());
-}
+        .then(data => data.json())
+        .catch(e => console.log('auth server fetch error: ' + e.message));
+};
 
-export default function Form({ setToken }) {
-    const [username, setUserName] = React.useState();
-    const [password, setPassword] = React.useState();
+export default function Form() {
+    const [username, setUserName] = useState();
+    const [password, setPassword] = useState();
 
     const submitHandler = async e => {
         e.preventDefault();
 
         if (username && password) {
-            let token = await Auth({ username, password });
-            // setToken(token);
-            window.location.replace('http://localhost:3000/' + token.id);
+            localStorage.setItem('token', utils.generateId());
+            let data = await Auth({ password });
+            localStorage.setItem('username', username);
+            localStorage.setItem('chatId', data.chatId);
         }
     }
 
@@ -66,7 +68,3 @@ export default function Form({ setToken }) {
         </form>
     );
 }
-
-// Form.propTypes = {
-//     setToken: PropTypes.func.isRequired
-// };

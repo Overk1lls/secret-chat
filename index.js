@@ -5,7 +5,8 @@ const { Server } = require('socket.io');
 const config = require('./config/config.json');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Message = require('./models/Message');
+// const Message = require('./models/Message');
+// require('dotenv').config;
 
 const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 const io = new Server(server, {
@@ -18,44 +19,44 @@ app.use(express.json({ extended: true }));
 app.use(cors());
 app.use('/api/form', require('./routes/form'));
 
-try {
-    io.on('connection', async (socket) => {
-        // joins the given socket
-        const { chatId } = socket.handshake.auth;
-        socket.join(chatId);
+io.on('connection', async (socket) => {
+    socket.on('connect_error', (e) => {
+        console.log('Socket connect error: ' + e.message);
+    });
 
-        console.log(`Socket connection is created (${socket.id}) in room (${chatId})`);
+    const { chatId } = socket.handshake.auth;
+    socket.join(chatId);
 
-        // connection error
-        socket.on('connect_error', (err) => { console.log('Socket connect error: ' + err.message); });
+    console.log(`Socket connection is created (${socket.id}) in room (${chatId})`);
 
-        // fetch messages from DB and add them to the socket
-        let fetchMessages = await Message.find({ chatId: chatId });
+    // let fetchMessages = await Message.find({ chatId: chatId });
+    // if (fetchMessages) {
+    //     fetchMessages.map(msg => { io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, msg); });
+    // }
 
-        if (fetchMessages) {
-            fetchMessages.map(msg => { io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, msg); });
-        }
+    // socket.on(NEW_CHAT_MESSAGE_EVENT, async (data) => {
+    //     let newMessage = new Message({
+    //         ...data,
+    //         chatId: chatId
+    //     });
+    //     await newMessage.save();
 
-        // a new message sent
-        socket.on(NEW_CHAT_MESSAGE_EVENT, async (data) => {
-            let newMessage = new Message({
-                ...data,
-                chatId: chatId
-            });
-            await newMessage.save();
+    //     io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, data);
+    // });
 
-            io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, data);
-        });
-
-        socket.on('disconnect', () => {
-            console.log(`Socket (${socket.id}) disconnected in room (${chatId})`);
-
-            socket.leave(chatId);
+    socket.on(NEW_CHAT_MESSAGE_EVENT, message => {
+        io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, {
+            body: message.body,
+            token: message.token,
+            username: message.username
         });
     });
-} catch (e) {
-    console.log('Socket error: ' + e.message);
-}
+
+    socket.on('disconnect', () => {
+        console.log(`Socket (${socket.id}) disconnected in room (${chatId})`);
+        socket.leave(chatId);
+    });
+});
 
 async function start() {
     try {

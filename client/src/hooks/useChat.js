@@ -4,41 +4,37 @@ import socket from 'socket.io-client';
 const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 const SERVER_URL = "http://localhost:4000";
 
-const useChat = (chatId) => {
+export default function useChat() {
+    const chatId = localStorage.getItem('chatId');
+    const token = localStorage.getItem('token');
     const [messages, setMessages] = useState([]);
     const socketRef = useRef();
 
     useEffect(() => {
-        // creates a WebSocket connection
         socketRef.current = socket(SERVER_URL, {
             auth: { chatId }
         });
 
-        // listens for incoming messages
-        socketRef.current.on(NEW_CHAT_MESSAGE_EVENT, (message) => {
-            const incomingMessage = {
+        socketRef.current.on(NEW_CHAT_MESSAGE_EVENT, message => {
+            let incMessage = {
                 ...message,
-                ownedByCurrentUser: message.senderId === socketRef.current.id
+                ownedByCurrentUser: message.token === token
             };
-            setMessages(messages => [...messages, incomingMessage]);
+            setMessages(messages => [...messages, incMessage]);
         });
 
-        // destroys the socket when the connection is closed
         return () => {
-            setMessages([]);
             socketRef.current.disconnect();
         };
     }, [chatId]);
 
-    // sends a message to the server that pushes it to the chat
-    const sendMessage = (content) => {
+    const sendMessage = content => {
         socketRef.current.emit(NEW_CHAT_MESSAGE_EVENT, {
             body: content,
-            senderId: socketRef.current.id
+            token: token,
+            username: localStorage.getItem('username')
         });
     };
 
     return { messages, sendMessage };
 };
-
-export default useChat;
