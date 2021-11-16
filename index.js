@@ -5,47 +5,54 @@ const { Server } = require('socket.io');
 const config = require('./config/config.json');
 const mongoose = require('mongoose');
 const cors = require('cors');
-// const Message = require('./models/Message');
-// require('dotenv').config;
+const Message = require('./models/Message');
 
-const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
 const io = new Server(server, {
     cors: {
         origin: '*'
     }
 });
 
+const events = {
+    NEW_CHAT_MESSAGE_EVENT: 'newChatMessage',
+    NEW_CHAT: 'newChat'
+};
+
 app.use(express.json({ extended: true }));
 app.use(cors());
-app.use('/api/form', require('./routes/form'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/chat', require('./routes/chat'));
 
-io.on('connection', async (socket) => {
-    socket.on('connect_error', (e) => {
+io.on('connection', async socket => {
+    socket.on('connect_error', e => {
         console.log('Socket connect error: ' + e.message);
     });
-
+    
     const { chatId } = socket.handshake.auth;
     socket.join(chatId);
 
+    try {
+        let messages = await Message.find({ chatId });
+        
+        if (messages) {
+            io.in(chatId).emit('new', messages);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+
     console.log(`Socket connection is created (${socket.id}) in room (${chatId})`);
 
-    // let fetchMessages = await Message.find({ chatId: chatId });
-    // if (fetchMessages) {
-    //     fetchMessages.map(msg => { io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, msg); });
-    // }
+    socket.on(events.NEW_CHAT_MESSAGE_EVENT, async message => {
+        let newMessage = new Message({
+            chatId: chatId,
+            body: message.body,
+            token: message.token,
+            username: message.username
+        });
+        await newMessage.save();
 
-    // socket.on(NEW_CHAT_MESSAGE_EVENT, async (data) => {
-    //     let newMessage = new Message({
-    //         ...data,
-    //         chatId: chatId
-    //     });
-    //     await newMessage.save();
-
-    //     io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, data);
-    // });
-
-    socket.on(NEW_CHAT_MESSAGE_EVENT, message => {
-        io.in(chatId).emit(NEW_CHAT_MESSAGE_EVENT, {
+        io.in(chatId).emit(events.NEW_CHAT_MESSAGE_EVENT, {
             body: message.body,
             token: message.token,
             username: message.username
@@ -67,7 +74,7 @@ async function start() {
 
         server.listen(config.port, () => console.log('App has been started on port', config.port));
     } catch (e) {
-        console.log('Database error:', e.message);
+        console.error(e);
         process.exit(1);
     }
 }

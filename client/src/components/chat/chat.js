@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import useChat from '../../hooks/useChat';
+import useToken from '../../hooks/useToken';
 import './chat.css';
 
 export default function Chat() {
-    const { messages, sendMessage } = useChat();
+    const { token } = useToken();
+    const { messages, sendMessage } = useChat(token);
     const [newMessage, setNewMessage] = useState([]);
+    const history = useHistory();
 
     const handleSendMessage = () => {
         sendMessage(newMessage);
@@ -22,6 +26,7 @@ export default function Chat() {
         localStorage.removeItem('token');
         localStorage.removeItem('chatId');
         localStorage.removeItem('username');
+        history.go(0);
     };
 
     return (
@@ -33,10 +38,10 @@ export default function Chat() {
                         {messages.map((message, i) => (
                             <li
                                 key={i}
-                                className={`m-1 d-flex ${message.ownedByCurrentUser ? 'justify-content-end' : ''}`}
+                                className={`m-1 d-flex ${message.token === token ? 'justify-content-end' : ''}`}
                             >
                                 <span className="pt-2">{message.username} |</span>
-                                <div className={`mr-4 rounded-pill ${message.ownedByCurrentUser ? 'list-group-item active' : 'list-group-item'}`}>
+                                <div className={`mr-4 rounded-pill ${message.token === token ? 'list-group-item active' : 'list-group-item'}`}>
                                     {message.body}
                                 </div>
                             </li>

@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import socket from 'socket.io-client';
 
-const NEW_CHAT_MESSAGE_EVENT = "newChatMessage";
+const events = {
+    NEW_CHAT_MESSAGE_EVENT: 'newChatMessage',
+    NEW_CHAT: 'newChat'
+};
 const SERVER_URL = "http://localhost:4000";
 
-export default function useChat() {
+export default function useChat(token) {
+    const username = localStorage.getItem('username');
     const chatId = localStorage.getItem('chatId');
-    const token = localStorage.getItem('token');
     const [messages, setMessages] = useState([]);
     const socketRef = useRef();
 
@@ -14,25 +17,25 @@ export default function useChat() {
         socketRef.current = socket(SERVER_URL, {
             auth: { chatId }
         });
+        
+        socketRef.current.on(events.NEW_CHAT, msgs => {
+            setMessages(msgs);
+        });
 
-        socketRef.current.on(NEW_CHAT_MESSAGE_EVENT, message => {
-            let incMessage = {
-                ...message,
-                ownedByCurrentUser: message.token === token
-            };
-            setMessages(messages => [...messages, incMessage]);
+        socketRef.current.on(events.NEW_CHAT_MESSAGE_EVENT, message => {
+            setMessages(messages => [...messages, message]);
         });
 
         return () => {
             socketRef.current.disconnect();
         };
-    }, [chatId]);
+    }, [chatId, token]);
 
     const sendMessage = content => {
-        socketRef.current.emit(NEW_CHAT_MESSAGE_EVENT, {
+        socketRef.current.emit(events.NEW_CHAT_MESSAGE_EVENT, {
             body: content,
-            token: token,
-            username: localStorage.getItem('username')
+            token,
+            username
         });
     };
 
