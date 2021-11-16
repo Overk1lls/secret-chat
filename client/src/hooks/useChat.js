@@ -3,7 +3,9 @@ import socket from 'socket.io-client';
 
 const events = {
     NEW_CHAT_MESSAGE_EVENT: 'newChatMessage',
-    NEW_CHAT: 'newChat'
+    NEW_CHAT: 'newChat',
+    NEW_USER: 'newUser',
+    USER_LEFT: 'userLeft'
 };
 const SERVER_URL = "http://localhost:4000";
 
@@ -15,7 +17,7 @@ export default function useChat(token) {
 
     useEffect(() => {
         socketRef.current = socket(SERVER_URL, {
-            auth: { chatId }
+            auth: { username, chatId }
         });
         
         socketRef.current.on(events.NEW_CHAT, msgs => {
@@ -26,10 +28,17 @@ export default function useChat(token) {
             setMessages(messages => [...messages, message]);
         });
 
+        socketRef.current.on(events.NEW_USER, ({ body }) => {
+            setMessages(messages => [...messages, { body }]);
+        });
+        socketRef.current.on(events.USER_LEFT, ({ body }) => {
+            setMessages(messages => [...messages, { body }]);
+        });
+
         return () => {
             socketRef.current.disconnect();
         };
-    }, [chatId, token]);
+    }, [chatId, token, username]);
 
     const sendMessage = content => {
         socketRef.current.emit(events.NEW_CHAT_MESSAGE_EVENT, {

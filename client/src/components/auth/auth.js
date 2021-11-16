@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import useToken from '../../hooks/useToken';
 
 const SERVER_URL = 'http://localhost:4000';
 
-const Auth = credentials => {
-    return fetch(SERVER_URL + '/api/auth', {
+const Auth = async credentials => {
+    return await fetch(SERVER_URL + '/api/auth', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -17,11 +15,10 @@ const Auth = credentials => {
 };
 
 export default function Form() {
+    const token = localStorage.getItem('token');
     const [name, setName] = useState();
     const [password, setPassword] = useState();
     const [response, setResponse] = useState('');
-    const { setToken } = useToken();
-    const history = useHistory();
 
     const submitHandler = async e => {
         e.preventDefault();
@@ -30,12 +27,12 @@ export default function Form() {
             let data = await Auth({ password });
 
             if (data.error) setResponse('Something went wrong...');
-            if (!localStorage.getItem('token') && data.token) setToken(data.token);
+            if (!token && data.token) localStorage.setItem('token', data.token);
 
             localStorage.setItem('username', name);
             localStorage.setItem('chatId', data.chatId);
 
-            history.go(0);
+            window.location.href = 'http://localhost:3000/chat/' + data.chatId;
         } else setResponse('Please, enter name and password!');
     }
 

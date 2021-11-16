@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import useChat from '../../hooks/useChat';
-import useToken from '../../hooks/useToken';
 import './chat.css';
 
 export default function Chat() {
-    const { token } = useToken();
+    const token = localStorage.getItem('token');
     const { messages, sendMessage } = useChat(token);
     const [newMessage, setNewMessage] = useState([]);
-    const history = useHistory();
 
     const handleSendMessage = () => {
         sendMessage(newMessage);
@@ -23,16 +21,14 @@ export default function Chat() {
     };
 
     const handleBackPress = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('chatId');
-        localStorage.removeItem('username');
-        history.go(0);
+        localStorage.clear();
+        window.location.href = 'http://localhost:3000';
     };
 
     return (
         <div className="container">
             <div className="chat container mt-5">
-                <h1 className="text-center pt-3">Chat: {localStorage.getItem('chatId')}</h1>
+                <h1 className="text-center pt-3">Chat Room: {localStorage.getItem('chatId')}</h1>
                 <div className="flex-column container">
                     <ol className="list-group p-4">
                         {messages.map((message, i) => (
@@ -60,7 +56,7 @@ export default function Chat() {
                 </div>
             </div>
             <div className="text-center mt-4">
-                <button className="btn btn-outline-secondary px-5" onClick={handleBackPress}>Back</button>
+                <Link to='/'><button className="btn btn-outline-secondary px-5" onClick={handleBackPress}>Back</button></Link>
             </div>
         </div>
     );

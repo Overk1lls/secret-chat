@@ -8,6 +8,7 @@ const Chat = require('../models/Chat');
 router.post('/', async (req, res) => {
     try {
         let { password } = req.body;
+        let token = utils.generateId();
 
         let passToSha = crypto.HmacSHA256(password, config.secret_key).toString();
         let chat = await Chat.findOne({ password: passToSha });
@@ -24,7 +25,7 @@ router.post('/', async (req, res) => {
 
         return res.status(201).send({ 
             chatId: newChat.id,
-            token: utils.generateId() 
+            token
         });
     } catch (e) {
         res.status(500).json({ error: e.message });

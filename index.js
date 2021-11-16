@@ -15,7 +15,9 @@ const io = new Server(server, {
 
 const events = {
     NEW_CHAT_MESSAGE_EVENT: 'newChatMessage',
-    NEW_CHAT: 'newChat'
+    NEW_CHAT: 'newChat',
+    NEW_USER: 'newUser',
+    USER_LEFT: 'userLeft'
 };
 
 app.use(express.json({ extended: true }));
@@ -27,13 +29,17 @@ io.on('connection', async socket => {
     socket.on('connect_error', e => {
         console.log('Socket connect error: ' + e.message);
     });
-    
-    const { chatId } = socket.handshake.auth;
+
+    const { username, chatId } = socket.handshake.auth;
     socket.join(chatId);
+
+    io.in(chatId).emit(events.NEW_USER, {
+        body: username + ' has entered the chat'
+    });
 
     try {
         let messages = await Message.find({ chatId });
-        
+
         if (messages) {
             io.in(chatId).emit('new', messages);
         }
@@ -61,6 +67,7 @@ io.on('connection', async socket => {
 
     socket.on('disconnect', () => {
         console.log(`Socket (${socket.id}) disconnected in room (${chatId})`);
+        socket.in(chatId).emit(events.USER_LEFT, { body: username + ' has left the chat' });
         socket.leave(chatId);
     });
 });
