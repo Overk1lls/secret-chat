@@ -2,10 +2,11 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const { Server } = require('socket.io');
-const config = require('./config/config.json');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Message = require('./models/Message');
+
+require('dotenv').config();
 
 const io = new Server(server, {
     cors: {
@@ -74,12 +75,12 @@ io.on('connection', async socket => {
 
 async function start() {
     try {
-        await mongoose.connect(config.mongo_uri, {
+        await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
 
-        server.listen(config.port, () => console.log('App has been started on port', config.port));
+        server.listen(process.env.PORT | 4000, () => console.log('App has been started on port', process.env.PORT));
     } catch (e) {
         console.error(e);
         process.exit(1);

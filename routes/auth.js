@@ -1,16 +1,17 @@
 const { Router } = require('express');
 const router = Router();
 const crypto = require('crypto-js');
-const config = require('../config/config.json');
 const utils = require('../utils/utils');
 const Chat = require('../models/Chat');
+
+require('dotenv').config();
 
 router.post('/', async (req, res) => {
     try {
         let { password } = req.body;
         let token = utils.generateId();
 
-        let passToSha = crypto.HmacSHA256(password, config.secret_key).toString();
+        let passToSha = crypto.HmacSHA256(password, process.env.SECRET_KEY).toString();
         let chat = await Chat.findOne({ password: passToSha });
 
         if (chat) {
