@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useChat from '../../hooks/useChat';
 import './chat.css';
@@ -7,6 +7,11 @@ export default function Chat() {
     const token = localStorage.getItem('token');
     const { messages, sendMessage } = useChat(token);
     const [newMessage, setNewMessage] = useState([]);
+    const messagesRef = useRef(null);
+
+    useEffect(() => {
+        messagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleSendMessage = () => {
         sendMessage(newMessage);
@@ -29,20 +34,25 @@ export default function Chat() {
         <div className="container">
             <div className="chat container mt-5">
                 <h1 className="text-center pt-3">Chat Room: {localStorage.getItem('chatId')}</h1>
-                <div className="flex-column container">
+                <div className="flex-column message-wrapper">
                     <ol className="list-group p-4">
                         {messages.map((message, i) => (
                             <li
                                 key={i}
                                 className={`m-1 d-flex ${message.token === token ? 'justify-content-end' : ''}`}
                             >
-                                <span className="pt-2">{message.username} |</span>
-                                <div className={`mr-4 rounded-pill ${message.token === token ? 'list-group-item active' : 'list-group-item'}`}>
+                                <h6 className="p-2">{message.username ? message.username + ' >' : ''}</h6>
+                                <div className={`p-2 rounded-pill ${message.token ? 
+                                    message.token === token ? 
+                                        'list-group-item-success' : 
+                                        'list-group-item-primary' : 
+                                    'list-group-item-secondary'}`}>
                                     {message.body}
                                 </div>
                             </li>
                         ))}
                     </ol>
+                    <div ref={messagesRef} />
                 </div>
                 <div className="input-group mb-3">
                     <textarea

@@ -5,3 +5,8 @@
 ol li {
     list-style-type: none;
 }
+
+.message-wrapper {
+    overflow: scroll;
+    height: 600px;
+}
