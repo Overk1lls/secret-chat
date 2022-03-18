@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const SERVER_URL = 'http://localhost:4000';
 
 const Auth = async credentials => {
-    return await fetch(SERVER_URL + '/api/auth', {
+    return fetch(SERVER_URL + '/api/auth', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

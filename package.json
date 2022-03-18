@@ -1,24 +1,31 @@
 {
   "name": "secret-chat",
-  "version": "1.0.0",
-  "description": "a secret chat",
-  "main": "index.js",
+  "version": "1.1.0",
+  "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "node build/index.js",
+    "dev": "npx tsc & node build/index.js"
   },
   "author": "Yury Pakhota",
   "license": "ISC",
   "dependencies": {
-    "config": "^3.3.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
-    "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.0.8",
-    "nodemon": "^2.0.13",
     "socket.io": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^8.5.8",
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
+    "eslint": "^8.11.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.2"
   }
 }
