@@ -1,20 +1,15 @@
 import { Router } from 'express';
-import { Messages } from '../../models/message';
+import { ErrorCode, SocketError } from '../../errors/socket-error';
+import { Chats } from '../../models/chat';
 
 export const router = Router();
 
 router.post('/', async (req, res, next) => {
-    try {
-        const chatId: string = req.body.chatId;
+    const chatId: string = req.body.chatId;
 
-        // const messages = await MessageModel.find({ chatId });
-        // if (messages) {
-        //     res.json(messages);
-        // }
-
-        next();
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-        console.error(e);
+    const chat = await Chats.findOne({ id: chatId });
+    if (!chat) {
+        next(new SocketError(ErrorCode.BAD_REQUEST, 'Such chat id is not found'));
     }
+    res.status(200).json({ response: chat });
 });

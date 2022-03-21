@@ -15,14 +15,15 @@ const utils_1 = require("../../utils");
 const chat_1 = require("../../models/chat");
 const crypto_1 = require("crypto");
 const dotenv_1 = require("dotenv");
+const socket_error_1 = require("../../errors/socket-error");
 (0, dotenv_1.config)();
 const { SECRET_KEY } = process.env;
 exports.router = (0, express_1.Router)();
-exports.router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { password } = req.body;
         if (!password) {
-            return res.status(400);
+            throw new socket_error_1.SocketError(socket_error_1.ErrorCode.BAD_REQUEST, 'No password');
         }
         const pwdHash = (0, crypto_1.createHmac)('sha256', SECRET_KEY)
             .update(password)
@@ -33,18 +34,16 @@ exports.router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (chat) {
             return res.status(200).json({ chatId: chat.id, token });
         }
-        const newChat = new chat_1.Chats({
+        const newChat = yield chat_1.Chats.create({
             id: token,
             password: pwdHash
         });
-        yield newChat.save();
         res.status(201).send({
             chatId: newChat.id,
             token
         });
     }
-    catch (e) {
-        // res.status(500).json({ error: e.message });
-        console.error(e);
+    catch (err) {
+        next(err);
     }
 }));

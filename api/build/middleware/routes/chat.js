@@ -11,18 +11,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
+const socket_error_1 = require("../../errors/socket-error");
+const chat_1 = require("../../models/chat");
 exports.router = (0, express_1.Router)();
 exports.router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const chatId = req.body.chatId;
-        // const messages = await MessageModel.find({ chatId });
-        // if (messages) {
-        //     res.json(messages);
-        // }
-        next();
+    const chatId = req.body.chatId;
+    const chat = yield chat_1.Chats.findOne({ id: chatId });
+    if (!chat) {
+        next(new socket_error_1.SocketError(socket_error_1.ErrorCode.BAD_REQUEST, 'Such chat id is not found'));
     }
-    catch (e) {
-        res.status(500).json({ error: e.message });
-        console.error(e);
-    }
+    res.status(200).json({ response: chat });
 }));
