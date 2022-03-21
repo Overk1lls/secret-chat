@@ -11,15 +11,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const message_1 = require("../../models/message");
 exports.router = (0, express_1.Router)();
 exports.router.post('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const chatId = req.body.chatId;
-        const messages = yield message_1.MessageModel.find({ chatId });
-        if (messages) {
-            res.json(messages);
-        }
+        // const messages = await MessageModel.find({ chatId });
+        // if (messages) {
+        //     res.json(messages);
+        // }
         next();
     }
     catch (e) {

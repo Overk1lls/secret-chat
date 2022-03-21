@@ -20,18 +20,21 @@ const { SECRET_KEY } = process.env;
 exports.router = (0, express_1.Router)();
 exports.router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const password = req.body.password;
-        const token = (0, utils_1.generateId)();
+        const { password } = req.body;
+        if (!password) {
+            return res.status(400);
+        }
         const pwdHash = (0, crypto_1.createHmac)('sha256', SECRET_KEY)
             .update(password)
             .digest()
             .toString();
-        const chat = yield chat_1.ChatModel.findOne({ password: pwdHash });
+        const token = (0, utils_1.generateId)();
+        const chat = yield chat_1.Chats.findOne({ password: pwdHash });
         if (chat) {
-            res.json({ chatId: chat.id, token });
+            return res.status(200).json({ chatId: chat.id, token });
         }
-        const newChat = new chat_1.ChatModel({
-            id: (0, utils_1.generateId)(),
+        const newChat = new chat_1.Chats({
+            id: token,
             password: pwdHash
         });
         yield newChat.save();
@@ -41,7 +44,7 @@ exports.router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
     }
     catch (e) {
-        res.status(500).json({ error: e.message });
+        // res.status(500).json({ error: e.message });
         console.error(e);
     }
 }));

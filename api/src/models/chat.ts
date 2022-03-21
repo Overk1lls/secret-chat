@@ -1,16 +1,17 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IMessage } from './message';
 
 export interface IChat {
+    _id: Schema.Types.ObjectId,
     id: string,
     password: string,
-    messages: IMessage[]
-}
+    messages: Schema.Types.ObjectId[]
+}   
 
 const schema = new Schema<IChat>({
     id: { type: String, required: true, unique: true },
     password: { type: String, required: true, unique: true },
-    messages: [{ type: Types.ObjectId, ref: 'message', default: [] }]
+    messages: [{ type: Schema.Types.ObjectId, ref: 'Message', default: [] }]
 });
 
-export const ChatModel = model('chat', schema);
+export const Chats = model('Chat', schema);

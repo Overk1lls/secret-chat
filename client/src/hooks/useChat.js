@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { SERVER_URL, storages } from '../components/auth/auth';
 
-const events = {
+export const events = {
     NEW_MESSAGE: 'newChatMessage',
     NEW_CHAT: 'newChat',
     NEW_USER: 'newUser',
     USER_LEFT: 'userLeft'
 };
-const SERVER_URL = "http://localhost:4000";
 
 export const useChat = token => {
-    const username = localStorage.getItem('username');
-    const chatId = localStorage.getItem('chatId');
+    const username = localStorage.getItem(storages.USERNAME);
+    const chatId = localStorage.getItem(storages.CHAT_ID);
     const [messages, setMessages] = useState([]);
-    const socketRef = useRef();
+    const socketRef = useRef(null);
 
     useEffect(() => {
         socketRef.current = io(SERVER_URL, {
@@ -26,7 +26,6 @@ export const useChat = token => {
         socketRef.current.on(events.NEW_CHAT, messages => setMessages(messages));
 
         socketRef.current.on(events.NEW_MESSAGE, message => {
-            console.log('this:12321', message);
             setMessages(messages => [...messages, message]);
         });
 
@@ -42,7 +41,6 @@ export const useChat = token => {
     }, [chatId, username, token]);
 
     const sendMessage = content => {
-        console.log(messages);
         socketRef.current.emit(events.NEW_MESSAGE, {
             body: content,
             token,

@@ -1,6 +1,6 @@
 import { createApp } from './middleware/app';
-import { SocketServer } from './services/socket.service';
-import { MongoDbConnection } from './services/mongodb.service';
+import { Socket } from './services/socket';
+import { MongoDbConnection } from './services/mongodb';
 import { config as dotenvInit } from 'dotenv';
 
 dotenvInit();
@@ -8,13 +8,13 @@ dotenvInit();
 const { PORT, MONGO_URI } = process.env;
 
 const app = createApp();
-const server = new SocketServer(app, parseInt(PORT));
+const server = new Socket(app, parseInt(PORT));
 
 const mongodb = new MongoDbConnection(MONGO_URI);
 
 const start = async () => {
     await mongodb.connect();
-    await server.setup();
+    server.setup();
 };
 
 start().catch((err: Error) => {

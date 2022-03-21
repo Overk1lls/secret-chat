@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { generateId } from '../../utils';
-import { ChatModel } from '../../models/chat';
+import { Chats } from '../../models/chat';
 import { createHmac } from 'crypto';
 import { config } from 'dotenv';
+import { IUser } from '../../interfaces/dto/user.dto';
 
 config();
 
@@ -12,21 +13,25 @@ export const router = Router();
 
 router.post('/', async (req, res) => {
     try {
-        const password: string = req.body.password;
-        const token = generateId();
+        const { password } = req.body as IUser;
+        if (!password) {
+            return res.status(400);
+        }
 
         const pwdHash = createHmac('sha256', SECRET_KEY)
             .update(password)
             .digest()
             .toString();
 
-        const chat = await ChatModel.findOne({ password: pwdHash });
+        const token = generateId();
+
+        const chat = await Chats.findOne({ password: pwdHash });
         if (chat) {
-            res.json({ chatId: chat.id, token });
+            return res.status(200).json({ chatId: chat.id, token });
         }
 
-        const newChat = new ChatModel({
-            id: generateId(),
+        const newChat = new Chats({
+            id: token,
             password: pwdHash
         });
         await newChat.save();
@@ -36,7 +41,7 @@ router.post('/', async (req, res) => {
             token
         });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        // res.status(500).json({ error: e.message });
         console.error(e);
     }
 });

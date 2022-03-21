@@ -9,20 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const app_1 = require("./middleware/app");
-const socket_1 = require("./services/socket");
-const mongodb_1 = require("./services/mongodb");
-const dotenv_1 = require("dotenv");
-(0, dotenv_1.config)();
-const { PORT, MONGO_URI } = process.env;
-const app = (0, app_1.createApp)();
-const server = new socket_1.Socket(app, parseInt(PORT));
-const mongodb = new mongodb_1.MongoDbConnection(MONGO_URI);
-const start = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield mongodb.connect();
-    server.setup();
-});
-start().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+exports.MongoDbConnection = void 0;
+const mongoose_1 = require("mongoose");
+class MongoDbConnection {
+    constructor(uri) {
+        this.connect = () => __awaiter(this, void 0, void 0, function* () { return (0, mongoose_1.connect)(this._uri); });
+        this.disconnect = () => __awaiter(this, void 0, void 0, function* () { return (0, mongoose_1.disconnect)(); });
+        this._uri = uri;
+    }
+}
+exports.MongoDbConnection = MongoDbConnection;

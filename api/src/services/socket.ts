@@ -1,8 +1,9 @@
-import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { createServer, Server as HttpServer } from 'http';
+import { Server as SocketServer } from 'socket.io';
 import { ISocketAuth } from '../interfaces/dto/auth.dto';
-import { ChatModel, IChat } from '../models/chat';
-import { IMessage, MessageModel } from '../models/message';
+import { IChatAggregation } from '../interfaces/dto/chat-aggregation';
+import { Chats, IChat } from '../models/chat';
+import { IMessage, Messages } from '../models/message';
 
 export enum Events {
     NEW_MESSAGE = 'newChatMessage',
@@ -11,33 +12,38 @@ export enum Events {
     USER_LEFT = 'userLeft'
 }
 
-export class SocketServer {
-    private _app: Express.Application;
-    private _server: Server;
+export class Socket {
+    private _httpServer: HttpServer;
+    private _socketServer: SocketServer;
     private _port: number;
 
     constructor(app: Express.Application, port: number) {
-        this._app = app;
+        this._httpServer = createServer(app);
         this._port = port;
     }
 
-    public get socket(): Server {
-        return this._server;
+    public get socket(): SocketServer {
+        return this._socketServer;
     }
 
-    public setup = async () => {
-        const httpServer = createServer(this._app);
-        httpServer.listen(this._port, () =>
+    public close = () => {
+        this._socketServer.close(() =>
+            this._httpServer.close()
+        );
+    }
+
+    public setup = () => {
+        this._httpServer.listen(this._port, () =>
             console.log(`App is running on port ${this._port}`)
         );
 
-        this._server = new Server(httpServer, {
+        this._socketServer = new SocketServer(this._httpServer, {
             cors: {
-                origin: '*',
-            },
+                origin: '*'
+            }
         });
 
-        this._server.on('connection', async socket => {
+        this._socketServer.on('connection', async socket => {
             socket.on('connect_error', (err: Error) => console.error(err));
 
             const { username, chatId } = socket.handshake.auth as ISocketAuth;
@@ -48,8 +54,29 @@ export class SocketServer {
                 body: `${username} has entered the chat.`
             });
 
-            const chat = await ChatModel.find({ chatId }) as IChat;
-            if (chat.messages) {
+            const chats: IChatAggregation[] = await Chats.aggregate([
+                {
+                    '$match': {
+                        id: chatId
+                    }
+                },
+                {
+                    '$project': {
+                        messages: 1
+                    }
+                },
+                {
+                    '$lookup': {
+                        from: 'messages',
+                        localField: '_id',
+                        foreignField: 'chat',
+                        as: 'messages'
+                    }
+                }
+            ]);
+            const chat = chats[0];
+
+            if (chat?.messages) {
                 this.emitEvent(chatId, Events.NEW_CHAT, chat.messages);
             }
             console.log(`Socket connection ${socket.id} is created in room ${chatId}`);
@@ -60,12 +87,10 @@ export class SocketServer {
                     token: message.token,
                     username: message.username
                 };
-                const msg = new MessageModel({
-                    chatId,
+                Messages.create({
+                    chat: chat._id,
                     ...msgToObj
                 });
-                await msg.save();
-
                 this.emitEvent(chatId, Events.NEW_MESSAGE, msgToObj);
             });
 
@@ -83,5 +108,5 @@ export class SocketServer {
         room: string | string[],
         eventName: string,
         obj: object
-    ) => this._server.in(room).emit(eventName, obj);
+    ) => this._socketServer.in(room).emit(eventName, obj);
 }
