@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/secret-chat/static/css/main.80833159.css",
+    "main.js": "/secret-chat/static/js/main.1fd700da.js",
+    "index.html": "/secret-chat/index.html",
+    "main.80833159.css.map": "/secret-chat/static/css/main.80833159.css.map",
+    "main.1fd700da.js.map": "/secret-chat/static/js/main.1fd700da.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.80833159.css",
+    "static/js/main.1fd700da.js"
+  ]
+}
