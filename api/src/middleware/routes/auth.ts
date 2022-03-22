@@ -16,7 +16,7 @@ router.post('/', async (req, res, next) => {
     try {
         const { password } = req.body as IUser;
         if (!password) {
-            throw new SocketError(ErrorCode.BAD_REQUEST, 'No password');
+            throw new SocketError(ErrorCode.BAD_REQUEST, 'Password is not found');
         }
 
         const pwdHash = createHmac('sha256', SECRET_KEY)

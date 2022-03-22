@@ -2,7 +2,7 @@ import { createServer, Server as HttpServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import { ISocketAuth } from '../interfaces/dto/auth.dto';
 import { IChatAggregation } from '../interfaces/dto/chat-aggregation';
-import { Chats, IChat } from '../models/chat';
+import { Chats } from '../models/chat';
 import { IMessage, Messages } from '../models/message';
 
 export enum Events {
@@ -30,7 +30,7 @@ export class Socket {
         this._socketServer.close(() =>
             this._httpServer.close()
         );
-    }
+    };
 
     public setup = () => {
         this._httpServer.listen(this._port, () =>

@@ -7,7 +7,7 @@ export const router = Router();
 router.post('/', async (req, res, next) => {
     const chatId: string = req.body.chatId;
 
-    const chat = await Chats.findOne({ id: chatId });
+    const chat = await Chats.findOne({ id: chatId }, 'id');
     if (!chat) {
         next(new SocketError(ErrorCode.BAD_REQUEST, 'Such chat id is not found'));
     }

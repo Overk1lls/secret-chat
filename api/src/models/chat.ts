@@ -1,12 +1,11 @@
 import { Schema, model } from 'mongoose';
-import { IMessage } from './message';
 
 export interface IChat {
     _id: Schema.Types.ObjectId,
     id: string,
     password: string,
     messages: Schema.Types.ObjectId[]
-}   
+}
 
 const schema = new Schema<IChat>({
     id: { type: String, required: true, unique: true },
