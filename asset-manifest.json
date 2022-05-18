@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/secret-chat/static/css/main.80833159.css",
-    "main.js": "/secret-chat/static/js/main.1fd700da.js",
+    "main.css": "/secret-chat/static/css/main.85284410.css",
+    "main.js": "/secret-chat/static/js/main.6fc6af5e.js",
     "index.html": "/secret-chat/index.html",
-    "main.80833159.css.map": "/secret-chat/static/css/main.80833159.css.map",
-    "main.1fd700da.js.map": "/secret-chat/static/js/main.1fd700da.js.map"
+    "main.85284410.css.map": "/secret-chat/static/css/main.85284410.css.map",
+    "main.6fc6af5e.js.map": "/secret-chat/static/js/main.6fc6af5e.js.map"
   },
   "entrypoints": [
-    "static/css/main.80833159.css",
-    "static/js/main.1fd700da.js"
+    "static/css/main.85284410.css",
+    "static/js/main.6fc6af5e.js"
   ]
 }
