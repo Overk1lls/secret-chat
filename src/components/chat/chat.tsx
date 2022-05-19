@@ -1,26 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { FC, KeyboardEventHandler, useEffect, useRef, useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { ChatMessage } from "./chat-message";
 import { auth, firestore } from "../../App";
+import { CurrentUserDTO } from "../../models/current-user.dto";
 
-export const Chat = () => {
-    const messagesRef = useRef(null);
+export const Chat: FC = () => {
+    const messagesRef = useRef<HTMLSpanElement>(null);
     const [message, setMessage] = useState('');
 
     const msgCollection = collection(firestore, 'messages');
     const [messages, loading] = useCollectionData(msgCollection);
+    console.log(messages);
 
     useEffect(() => {
-        messagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        messagesRef.current!.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const sendMessage = async e => {
+    const sendMessage = async (
+        e: React.KeyboardEvent<HTMLTextAreaElement> | React.MouseEvent<HTMLButtonElement>
+    ) => {
         e.preventDefault();
 
         if (!message.length) return;
 
-        const { uid, photoURL } = auth.currentUser;
+        const { uid, photoURL } = auth.currentUser as CurrentUserDTO;
 
         await addDoc(msgCollection, {
             text: message,
@@ -32,7 +36,7 @@ export const Chat = () => {
         setMessage('');
     };
 
-    const handleKeyPress = e => {
+    const handleKeyPress: KeyboardEventHandler<HTMLTextAreaElement> = e => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage(e);

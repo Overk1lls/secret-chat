@@ -1,9 +1,17 @@
+import { FC } from "react";
+import { DocumentData } from "firebase/firestore";
 import { auth } from "../../App";
+import { MessageDTO } from "../../models/message.dto";
 
-export const ChatMessage = ({ message, i }) => {
-    const { text, uid, photoURL } = message;
+type Document = {
+    message: DocumentData;
+    i: number;
+};
 
-    const isAuthor = uid === auth.currentUser.uid;
+export const ChatMessage: FC<Document> = ({ message, i }) => {
+    const { text, uid, photoURL } = message as MessageDTO;
+
+    const isAuthor = uid === auth.currentUser?.uid;
 
     return (
         <li
