@@ -1,5 +1,5 @@
 import { FC, KeyboardEventHandler, useEffect, useRef, useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, orderBy, query, serverTimestamp } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { ChatMessage } from "./chat-message";
 import { auth, firestore } from "../../App";
@@ -10,8 +10,8 @@ export const Chat: FC = () => {
     const [message, setMessage] = useState('');
 
     const msgCollection = collection(firestore, 'messages');
-    const [messages, loading] = useCollectionData(msgCollection);
-    console.log(messages);
+    const msgQuery = query(msgCollection, orderBy('createdAt'));
+    const [messages, loading] = useCollectionData(msgQuery);
 
     useEffect(() => {
         messagesRef.current!.scrollIntoView({ behavior: 'smooth' });
@@ -28,7 +28,7 @@ export const Chat: FC = () => {
 
         await addDoc(msgCollection, {
             text: message,
-            createdAt: new Date(),
+            createdAt: serverTimestamp(),
             uid,
             photoURL
         });
